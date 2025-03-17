@@ -7,22 +7,37 @@ function ListOfProducts() {
         { name: 'Latte', price: 1.0 },
         { name: 'Pasta', price: 0.7 },
     ];
-
+    const [totale, setTotale] = useState(0);
     const [addedProducts, setAddedProducts] = useState([]);
 
-    const [carrello, setCarrello] = useState(0);
-
     function addToCart(product) {
-        if (!addedProducts.some(p => p.name === product.name)) {
-            setAddedProducts([...addedProducts, product]);
-            setCarrello(carrello + 1);
+        const existingProduct = addedProducts.find(p => p.name === product.name);
+        if (existingProduct) {
+            setAddedProducts(addedProducts.map(p =>
+                p.name === product.name ? { ...p, quantity: p.quantity + 1 } : p
+            ));
+        } else {
+            setAddedProducts([...addedProducts, { ...product, quantity: 1 }]);
         }
+        setTotale(totale + product.price);
+    }
+
+    function removeFromCart(product) {
+        const existingProduct = addedProducts.find(p => p.name === product.name);
+        if (existingProduct.quantity > 1) {
+            setAddedProducts(addedProducts.map(p =>
+                p.name === product.name ? { ...p, quantity: p.quantity - 1 } : p
+            ));
+        } else {
+            setAddedProducts(addedProducts.filter(p => p.name !== product.name));
+        }
+        setTotale(totale - product.price);
     }
 
     return (
         <>
             <h3>
-                Carrello = {carrello}
+                Carrello = {addedProducts.reduce((acc, product) => acc + product.quantity, 0)}
             </h3>
             <h1>Lista Prodotti</h1>
             <div>
@@ -38,10 +53,12 @@ function ListOfProducts() {
                 <ul>
                     {addedProducts.map((product, index) => (
                         <li key={index}>
-                            {product.name} - {product.price} €
+                            {product.name} - {product.price} € x {product.quantity}
+                            <button onClick={() => removeFromCart(product)}>Rimuovi Prodotto</button>
                         </li>
                     ))}
                 </ul>
+                <h3>Totale da Pagare = {totale}€ </h3>
             </div>
         </>
     )
